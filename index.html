@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1769aa">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>10B1 • Sổ thi đua V4</title>
+<style>
+:root{--primary:#1769aa;--primary2:#0d8bba;--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#64748b;--line:#dce4ee;--good:#16803c;--bad:#c62828;--warn:#a16207}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#1769aa,#0b8fa8);color:#fff;padding:18px 20px;position:sticky;top:0;z-index:20;box-shadow:0 2px 12px #0002}
+header h1{margin:0;font-size:22px} header p{margin:4px 0 0;opacity:.9}
+nav{display:flex;gap:8px;overflow:auto;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:81px;z-index:19}
+nav button{white-space:nowrap;border:0;background:#edf3f8;color:#234;padding:9px 13px;border-radius:999px;font-weight:650;cursor:pointer}
+nav button.active{background:var(--primary);color:#fff}
+main{max-width:1250px;margin:auto;padding:16px}
+.tab{display:none}.tab.active{display:block}.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 7px #1b365d0a}
+.card h2,.card h3{margin:0 0 12px}.muted{color:var(--muted);font-size:13px}
+.stat{font-size:28px;font-weight:800}.good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;font:inherit}
+label{display:block;font-size:13px;font-weight:650;margin:8px 0 5px}
+button{font:inherit}.btn{border:0;border-radius:9px;padding:9px 13px;background:var(--primary);color:#fff;cursor:pointer;font-weight:650}.btn.secondary{background:#e8eef5;color:#18324b}.btn.danger{background:#b42318}.btn.good{background:#16803c}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:720px;background:#fff}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f1f5f9;position:sticky;top:0;z-index:1}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}.bT{background:#dcfce7;color:#166534}.bK{background:#fef3c7;color:#92400e}.bD{background:#dbeafe;color:#1e40af}.bC{background:#fee2e2;color:#991b1b}
+.formrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.small{font-size:12px}.right{text-align:right}.center{text-align:center}
+.notice{padding:11px;border-radius:10px;background:#eef6ff;border-left:4px solid var(--primary);margin-bottom:12px}
+@media(max-width:800px){header{padding:14px}header h1{font-size:18px}nav{top:70px}.g2,.g3{grid-template-columns:1fr}.formrow{grid-template-columns:1fr 1fr}main{padding:10px}.card{padding:12px}}
+@media(max-width:480px){.formrow{grid-template-columns:1fr}.actions .btn{flex:1 1 auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📘 10B1 • SỔ THI ĐUA ĐIỆN TỬ V3</h1>
+  <p>Trường THPT Mường Lát • Năm học 2026–2027 • <b>V5</b></p>
+</header>
+<nav id="nav">
+<button data-tab="dashboard" class="active">Tổng quan</button>
+<button data-tab="daily">Nhập hằng ngày</button>
+<button data-tab="weekly">Theo tuần</button>
+<button data-tab="groups">Thi đua tổ</button>
+<button data-tab="monthly">Theo tháng</button>
+<button data-tab="yearly">Cả năm</button>
+<button data-tab="students">Học sinh</button>
+<button data-tab="rules">Quy tắc</button>
+<button data-tab="backup">Dữ liệu</button><button data-tab="settings">☁️ Đồng bộ & Cài app</button>
+</nav>
+<main>
+<section id="dashboard" class="tab active">
+<div class="notice">💡 <b>Nguyên tắc:</b> mỗi học sinh có <b>100 điểm/tuần</b>. Điểm tuần = 100 + tổng điểm cộng − tổng điểm trừ. Tháng/kỳ/năm dùng trung bình các tuần.</div>
+<div class="grid g3">
+<div class="card"><div class="muted">Sĩ số</div><div id="statStudents" class="stat">0</div></div>
+<div class="card"><div class="muted">Số lượt ghi nhận</div><div id="statEntries" class="stat">0</div></div>
+<div class="card"><div class="muted">Điểm TB tuần hiện tại</div><div id="statAvg" class="stat">100</div></div>
+</div>
+<div class="card" style="margin-top:14px"><h2>📊 Xếp loại tuần hiện tại • Có chia tổ</h2><div id="dashboardTable"></div></div>
+</section>
+
+<section id="daily" class="tab">
+<div class="card">
+<h2>📝 Theo dõi nề nếp hằng ngày</h2>
+<div class="formrow">
+<div><label>Ngày</label><input type="date" id="entryDate"></div>
+<div><label>Tra cứu theo tổ</label><select id="dailyGroup" onchange="renderDailyRoster()"><option value="all">Tất cả 4 tổ</option><option value="1">Tổ 1</option><option value="2">Tổ 2</option><option value="3">Tổ 3</option><option value="4">Tổ 4</option></select></div>
+<div><label>Tìm học sinh</label><input id="dailySearch" oninput="renderDailyRoster()" placeholder="Nhập tên hoặc STT..."></div>
+<div><label>Chọn học sinh để ghi nhận</label><select id="entryStudent"></select></div>
+</div>
+<div class="formrow">
+<div><label>Nội dung cộng/trừ</label><select id="entryRule" onchange="updateRulePreview()"></select></div>
+<div><label>Số lần</label><input id="entryCount" type="number" min="1" step="1" value="1" oninput="updateRulePreview()"></div>
+<div><label>Thành tiền điểm</label><input id="entryTotal" readonly value="0"></div>
+<div><label>Ghi chú</label><input id="entryNote" placeholder="Ví dụ: tiết 2, môn Hóa..."></div>
+<div style="align-self:end"><button class="btn" onclick="addEntry()">+ Ghi nhận</button></div>
+<div style="align-self:end"><button class="btn secondary" onclick="quickAdd(-10)">−10</button> <button class="btn secondary" onclick="quickAdd(10)">+10</button></div>
+</div>
+<p class="muted"><b>V4:</b> mỗi lần ghi nhận có thể nhập số lần; tổng điểm = điểm quy định × số lần. Ví dụ −30 × 2 = −60 điểm. Danh sách bên dưới luôn giữ đúng <b>thứ tự lớp</b>. Có thể lọc theo tổ hoặc tìm nhanh theo STT/họ tên. Cột “STT tổ” là thứ tự của học sinh trong tổ theo danh sách lớp.</p>
+</div>
+<div class="card" style="margin-top:14px"><h2>📋 Danh sách lớp – theo dõi ngày <span id="dailyDateLabel"></span></h2><div id="dailyRoster"></div></div>
+<div class="card" style="margin-top:14px"><h2>Lịch sử ghi nhận</h2><div id="entriesTable"></div></div>
+</section>
+
+<section id="weekly" class="tab">
+<div class="card"><h2>📅 Báo cáo theo tuần</h2><div class="formrow">
+<div><label>Chọn ngày thuộc tuần</label><input type="date" id="weekDate" onchange="renderAll()"></div>
+<div><label>Tuần</label><input id="weekLabel" readonly></div>
+<div><label>Điểm nền</label><input value="100" readonly></div>
+<div><label>Thứ tự</label><select id="weekSort" onchange="renderAll()"><option value="score">Điểm cao → thấp</option><option value="name">Tên A → Z</option></select></div>
+</div></div>
+<div class="card" style="margin-top:14px"><div id="weeklyTable"></div></div>
+</section>
+
+<section id="groups" class="tab">
+<div class="card"><h2>🏆 Thi đua theo tổ</h2><div class="formrow"><div><label>Ngày thuộc tuần</label><input type="date" id="groupWeekDate" onchange="renderGroupReport()"></div></div></div>
+<div class="card" style="margin-top:14px"><div id="groupTable"></div></div>
+<div class="card" style="margin-top:14px"><h3>Chi tiết thành viên từng tổ</h3><div id="groupMembers"></div></div>
+</section>
+
+<section id="monthly" class="tab">
+<div class="card"><h2>📆 Báo cáo theo tháng</h2><div class="formrow"><div><label>Tháng</label><input type="month" id="monthPick" onchange="renderAll()"></div></div></div>
+<div class="card" style="margin-top:14px"><div id="monthlyTable"></div></div>
+</section>
+
+<section id="yearly" class="tab">
+<div class="card"><h2>🏆 Tổng hợp cả năm</h2><p class="muted">Điểm năm được tính bằng trung bình điểm của các tuần có phát sinh dữ liệu.</p><div id="yearlyTable"></div></div>
+</section>
+
+<section id="students" class="tab">
+<div class="card"><h2>👥 Danh sách học sinh</h2>
+<div class="formrow"><div><label>Họ và tên</label><input id="studentName"></div><div><label>Ghi chú</label><input id="studentInfo" placeholder="Tổ, ngày sinh..."></div><div><label>Trạng thái</label><select id="studentActive"><option value="1">Đang học</option><option value="0">Không hoạt động</option></select></div><div style="align-self:end"><button class="btn" onclick="addStudent()">+ Thêm học sinh</button></div></div>
+</div>
+<div class="card" style="margin-top:14px"><div id="studentsTable"></div></div>
+</section>
+
+<section id="rules" class="tab">
+<div class="card"><h2>⚙️ Quy tắc thi đua</h2><p class="muted">Đã nạp các mức trong bảng Excel và bổ sung −30 điểm/lần cho trường hợp không đi chào cờ, hoạt động ngoại khoá. Khi ghi nhận, có thể nhập số lần để nhân điểm.</p><div id="rulesTable"></div></div>
+</section>
+
+<section id="backup" class="tab">
+<div class="grid g2">
+<div class="card"><h2>💾 Sao lưu / khôi phục</h2><p class="muted">Dữ liệu được lưu tự động trên thiết bị bằng trình duyệt. Hãy xuất JSON thường xuyên để tránh mất dữ liệu.</p><div class="actions"><button class="btn good" onclick="exportJSON()">⬇ Xuất dữ liệu JSON</button><button class="btn secondary" onclick="document.getElementById('importFile').click()">⬆ Nhập JSON</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)"></div></div>
+<div class="card"><h2>📤 Xuất báo cáo</h2><p class="muted">Có thể xuất bảng hiện tại ra CSV để mở bằng Excel.</p><button class="btn" onclick="exportCurrentCSV()">⬇ Xuất CSV</button></div>
+</div>
+<div class="card" style="margin-top:14px"><h2>⚠️ Khu vực quản trị</h2><button class="btn danger" onclick="resetData()">Xóa toàn bộ dữ liệu đã nhập</button></div>
+</section>
+
+<section id="settings" class="tab">
+<div class="grid g2">
+<div class="card">
+<h2>📱 Cài như ứng dụng</h2>
+<p class="muted">Trên Android/Chrome hoặc máy tính, mở tool bằng HTTPS rồi chọn <b>Thêm vào màn hình chính / Install app</b>. V5 có thể hoạt động offline sau khi đã mở một lần.</p>
+<div class="actions"><button class="btn" onclick="installApp()">📲 Cài ứng dụng</button><button class="btn secondary" onclick="showInstallHelp()">❓ Hướng dẫn</button></div>
+<p id="installStatus" class="small"></p>
+</div>
+<div class="card">
+<h2>☁️ Đồng bộ giữa máy tính và điện thoại</h2>
+<p class="muted">V5 hỗ trợ đồng bộ qua Firebase/Firestore khi bạn có cấu hình riêng. Nếu chưa cấu hình, tool vẫn chạy bình thường bằng bộ nhớ cục bộ.</p>
+<label>Mã lớp / tài khoản đồng bộ</label><input id="cloudClassId" placeholder="Ví dụ: 10B1-2026-2027">
+<label>Firebase config (JSON)</label>
+<textarea id="firebaseConfig" rows="7" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+<div class="actions">
+<button class="btn" onclick="connectCloud()">☁️ Kết nối</button>
+<button class="btn good" onclick="cloudPush()">⬆ Đồng bộ lên cloud</button>
+<button class="btn secondary" onclick="cloudPull()">⬇ Tải dữ liệu từ cloud</button>
+</div>
+<p id="cloudStatus" class="small"></p>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<h2>🔐 Gợi ý bảo mật</h2>
+<p class="muted">Nếu dùng Firebase, hãy đặt Firestore Security Rules để chỉ tài khoản GVCN được đọc/ghi dữ liệu lớp. Không nhập thông tin nhạy cảm không cần thiết.</p>
+</div>
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const KEY="thiDua10B1_v2";
+const defaultRules=[
+["R01","Vắng học do bị ốm đau, việc nhà hệ trọng… (lí do chính đáng)",-10,"trừ"],
+["R02","Bị điểm kém trong sổ đầu bài (nhỏ hơn 5 điểm)",-10,"trừ"],
+["R03","Vào muộn, ra sớm, đổi chỗ ngồi trong giờ học.",-10,"trừ"],
+["R04","Nói chuyện riêng, làm việc riêng, ngủ trong giờ học",-10,"trừ"],
+["R05","Ném rác bừa bãi, không đúng nơi quy định",-10,"trừ"],
+["R06","Không tham gia làm các bài thi trực tuyến, tuyên truyền…",-15,"trừ"],
+["R07","Không ghi chép bài học, bị thầy cô phê bình",-15,"trừ"],
+["R08","Không mang đủ sách vở, đồ dùng học tập",-15,"trừ"],
+["R09","Đi dép lê, không đeo phù hiệu, cắt tóc kiểu sai quy cách…",-20,"trừ"],
+["R10","Ăn quà trên lớp, mang đồ ăn lên lớp",-20,"trừ"],
+["R11","Vắng học (không có lí do chính đáng được GVCN chấp nhận)",-30,"trừ"],
+["R12","Không đúng trang phục quy định (cả SPDT, các ngày thứ…)",-30,"trừ"],
+["R13","Làm vệ sinh chậm, làm chưa sạch…",-30,"trừ"],
+["R14","Không đi lao động (không có lí do chính đáng)",-50,"trừ"],
+["R15","Bỏ tiết học, trốn học, leo tường đi chơi…",-50,"trừ"],
+["R16","Hút thuốc lá trong khuôn viên trường",-100,"trừ"],
+["R17","Sử dụng điện thoại trong giờ học khi không được cho phép",-100,"trừ"],
+["R18","Vi phạm giao thông (không mũ BH, lai 3, bị CA thu giữ xe...)",-110,"trừ"],
+["R19","Uống rượu bia trong trường, có mùi rượu bia lên lớp (Xếp loại hạnh kiểm TB, Yếu cả kì)",-120,"trừ"],
+["R20","Gây gổ, đánh nhau trong và ngoài nhà trường (Xếp loại hạnh kiểm TB, Yếu cả kì)",-130,"trừ"],
+["R21","Sử dụng, tàng trữ vũ khí, chất cấm, bài bạc, cá độ… (Xếp loại hạnh kiểm TB, Yếu cả năm)",-140,"trừ"],
+["R22","Lấy trộm đồ của bạn, của dân trong và ngoài nhà trường (Xếp loại HK TB, Yếu cả năm)",-150,"trừ"],
+["R23","Vô lễ với giáo viên, công nhân viên nhà trường (Xếp loại hạnh kiểm mức TB, Yếu cả năm)",-200,"trừ"],
+["R24","Không đi chào cờ, hoạt động ngoại khoá",-30,"trừ"],
+["P01","Làm các bài thi trực tuyến đạt 5 điểm trở lên",10,"cộng"],
+["P02","Có điểm cao trong sổ đầu bài (8,9,10) cho mỗi lượt điểm",10,"cộng"],
+["P03","Tổ trưởng (cộng cho tuần)",15,"cộng"],
+["P04","Lớp trưởng, lớp phó, bí thư, cờ đỏ (cộng cho tuần)",20,"cộng"],
+["P05","Mặc sắc phục dân tộc theo quy định (cộng cho thứ 2, ngày lễ..)",30,"cộng"],
+["P06","Làm trực nhật thay bạn (do bạn không đi làm)",20,"cộng"],
+["P07","Được phân công làm việc đột xuất cho lớp, trường",50,"cộng"],
+["P08","Tham gia văn nghệ, thể thao, thi cấp trường",200,"cộng"],
+["P09","Tham gia các đội tuyển cấp trường",500,"cộng"]
+];
+const defaultStudents=[{"id": "S01", "name": "Hà Việt Anh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S02", "name": "Lê Văn Tuấn Anh", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S03", "name": "Nguyễn Việt Anh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S04", "name": "Tặng Việt Anh", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S05", "name": "Trần Thị Lan Anh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S06", "name": "Ngân Nguyệt Ánh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S07", "name": "Gia Ngọc Chi", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S08", "name": "Giàng Thị Chi", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S09", "name": "Vi Đức Chiến", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S10", "name": "Tặng Văn Cường", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S11", "name": "Vi Hà Dung", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S12", "name": "Thào A Dũng", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S13", "name": "Hà Văn Duy", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S14", "name": "Lò Đăng Dương", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S15", "name": "Hà Thành Đạt", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S16", "name": "Hà Tiến Đạt", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S17", "name": "Hà Thùy Giang", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S18", "name": "Lò Thị Thuý Giang", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S19", "name": "Vi Hoàng Bích Hằng", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S20", "name": "Hà Minh Hiếu", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S21", "name": "Hà Tuấn Khang", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S22", "name": "Lò Văn Khang", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S23", "name": "Lục Minh Khôi", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S24", "name": "Vi Văn Mạnh", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S25", "name": "Chẹo Anh Minh", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S26", "name": "Vi Anh Minh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S27", "name": "Ngân Quốc Nam", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S28", "name": "Vi Thị Bích Nguyệt", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S29", "name": "Lò Minh Nhật", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S30", "name": "Ngân Thị Nhi", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S31", "name": "Vi Văn Nhớ", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S32", "name": "Vi Thị Hà Nhung", "info": "Tổ 1", "group": 1, "active": true}, {"id": "S33", "name": "Hà Thị Như", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S34", "name": "Hà Quốc Nhược", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S35", "name": "Lương Thị Oanh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S36", "name": "Lương Đình Phong", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S37", "name": "Hà Minh Quân", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S38", "name": "Ngân Văn Quý", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S39", "name": "Lò Hiếu Thành", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S40", "name": "Lò Thanh Thảo", "info": "Tổ 4", "group": 4, "active": true}, {"id": "S41", "name": "Vi Thị Phương Thảo", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S42", "name": "Hà Đức Thiện (A)", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S43", "name": "Hà Đức Thiện (B)", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S44", "name": "Hà Thị Thư", "info": "Tổ 2", "group": 2, "active": true}, {"id": "S45", "name": "Lò Thế Vinh", "info": "Tổ 3", "group": 3, "active": true}, {"id": "S46", "name": "Vàng Thị Vinh", "info": "Tổ 2", "group": 2, "active": true}];
+let db=JSON.parse(localStorage.getItem(KEY)||"null")||{students:defaultStudents,entries:[],rules:defaultRules};
+
+// V5 migration / normalization
+if (typeof db !== "undefined") {
+  if (!db.rules.some(r=>r[0]==="R24")) db.rules.push(["R24","Không đi chào cờ, hoạt động ngoại khoá",-30,"trừ"]);
+  const a=db.students.find(s=>s.stt===42), b=db.students.find(s=>s.stt===43);
+  if(a) a.name="Hà Đức Thiện (A)";
+  if(b) b.name="Hà Đức Thiện (B)";
+  db.students.forEach((s,i)=>{ if(s.stt==null) s.stt=i+1; });
+  db.entries.forEach(e=>{ if(e.count==null)e.count=1; });
+  localStorage.setItem(KEY,JSON.stringify(db));
+}
+
+enrichStudents();
+// V4 migration: giữ dữ liệu V3, bổ sung quy tắc mới và định danh rõ 2 Hà Đức Thiện.
+if(!db.rules.some(r=>r[0]==="R24")) db.rules.push(["R24","Không đi chào cờ, hoạt động ngoại khoá",-30,"trừ"]);
+let s42=db.students.find(s=>s.id==="S42"), s43=db.students.find(s=>s.id==="S43");
+if(s42) s42.name="Hà Đức Thiện (A)";
+if(s43) s43.name="Hà Đức Thiện (B)";
+db.entries.forEach(e=>{if(!e.count)e.count=1;if(e.unitValue==null){let r=db.rules.find(x=>x[0]===e.ruleId);e.unitValue=r?.[2]??e.value;}});
+enrichStudents();
+function save(){enrichStudents();localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function today(){return new Date().toISOString().slice(0,10)}
+function weekStart(d){let x=new Date(d+"T00:00:00"), day=x.getDay(); let diff=day===0?-6:1-day; x.setDate(x.getDate()+diff); return x.toISOString().slice(0,10)}
+function addDays(s,n){let x=new Date(s+"T00:00:00");x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+function weekKey(d){return weekStart(d)}
+function classify(v){return v>=90?["Tốt","bT"]:v>=70?["Khá","bK"]:v>=50?["Đạt","bD"]:["Chưa Đạt","bC"]}
+function activeStudents(){return db.students.filter(s=>s.active!==false)}
+function classStudents(){return [...activeStudents()].sort((a,b)=>(a.stt||999)-(b.stt||999))}
+function enrichStudents(){let c={}; classStudents().forEach((s,i)=>{s.stt=i+1;c[s.group]=(c[s.group]||0)+1;s.groupOrder=c[s.group]})}
+function scoreFor(studentId, start, end){
+ let e=db.entries.filter(x=>x.studentId===studentId&&x.date>=start&&x.date<=end);
+ return {score:100+e.reduce((a,x)=>a+x.value,0), plus:e.filter(x=>x.value>0).reduce((a,x)=>a+x.value,0), minus:e.filter(x=>x.value<0).reduce((a,x)=>a+x.value,0), n:e.length};
+}
+function renderSelects(){
+ enrichStudents();
+ let st=classStudents();
+ entryStudent.innerHTML=st.length?st.map(s=>`<option value="${s.id}">${s.stt}. Tổ ${s.group} • ${esc(s.name)}</option>`).join(""):`<option value="">Chưa có học sinh</option>`;
+ entryRule.innerHTML=db.rules.map(r=>`<option value="${r[0]}">${r[3]==="trừ"?"−":"+"}${Math.abs(r[2])} • ${esc(r[1])}</option>`).join("");
+ renderDailyRoster();
+}
+function updateRulePreview(){
+ let r=db.rules.find(x=>x[0]===entryRule.value), n=Math.max(1,parseInt(entryCount.value||1,10));
+ if(r){entryTotal.value=(r[2]*n>0?"+":"")+(r[2]*n)+" điểm";}
+}
+function addEntry(){
+ let sid=entryStudent.value,rid=entryRule.value,n=Math.max(1,parseInt(entryCount.value||1,10));
+ if(!sid||!rid)return alert("Hãy chọn học sinh và nội dung.");
+ let r=db.rules.find(x=>x[0]===rid);
+ db.entries.push({id:uid(),studentId:sid,ruleId:rid,count:n,unitValue:Number(r[2]),value:Number(r[2])*n,date:entryDate.value||today(),note:entryNote.value.trim()});
+ entryNote.value=""; entryCount.value=1; updateRulePreview(); save(); alert(`Đã ghi nhận ${n} lần: ${Number(r[2])*n>0?"+":""}${Number(r[2])*n} điểm.`);
+}
+function quickAdd(v){let sid=entryStudent.value;if(!sid)return alert("Chưa có học sinh");db.entries.push({id:uid(),studentId:sid,ruleId:"QUICK",count:1,unitValue:v,value:v,date:entryDate.value||today(),note:"Điều chỉnh nhanh"});save()}
+function delEntry(id){if(confirm("Xóa lượt ghi nhận này?")){db.entries=db.entries.filter(x=>x.id!==id);save()}}
+function renderDailyRoster(){
+ if(!dailyRoster)return; enrichStudents(); let date=entryDate.value||today(); dailyDateLabel.textContent=`• ${date}`;
+ let g=dailyGroup.value, q=(dailySearch.value||"").toLowerCase().trim();
+ let arr=classStudents().filter(s=>(g==='all'||String(s.group)===g)&&(!q||String(s.stt).includes(q)||s.name.toLowerCase().includes(q)));
+ let ws=weekStart(date),we=addDays(ws,6);
+ dailyRoster.innerHTML=`<div class="tablewrap"><table><thead><tr><th>STT</th><th>Tổ</th><th>STT tổ</th><th>Họ và tên</th><th>Điểm ngày</th><th>Điểm tuần</th><th>Xếp loại</th><th>Thao tác</th></tr></thead><tbody>${arr.map(s=>{let day=db.entries.filter(e=>e.studentId===s.id&&e.date===date).reduce((a,e)=>a+e.value,0);let x=scoreFor(s.id,ws,we),c=classify(x.score);return `<tr><td>${s.stt}</td><td>Tổ ${s.group}</td><td>${s.groupOrder}</td><td><b>${esc(s.name)}</b></td><td class="${day<0?'bad':day>0?'good':''}"><b>${day>0?'+':''}${day}</b></td><td><b>${x.score}</b></td><td><span class="badge ${c[1]}">${c[0]}</span></td><td><button class="btn secondary" onclick="pickStudent('${s.id}')">Chọn</button></td></tr>`}).join("")}</tbody></table></div>`;
+}
+function pickStudent(id){entryStudent.value=id; entryStudent.scrollIntoView({behavior:'smooth',block:'center'});}
+entryDate.addEventListener('change',renderDailyRoster);
+function renderGroupReport(){
+ let d=groupWeekDate.value||today(),ws=weekStart(d),we=addDays(ws,6), rows=[1,2,3,4].map(g=>{let ms=classStudents().filter(s=>s.group===g);let vals=ms.map(s=>scoreFor(s.id,ws,we).score);let avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:100;let plus=ms.reduce((a,s)=>a+scoreFor(s.id,ws,we).plus,0),minus=ms.reduce((a,s)=>a+scoreFor(s.id,ws,we).minus,0);return {g,avg,plus,minus,n:ms.length}});
+ rows.sort((a,b)=>b.avg-a.avg); groupTable.innerHTML=`<p class="muted">Tuần ${ws} → ${we}</p><div class="tablewrap"><table><thead><tr><th>Hạng</th><th>Tổ</th><th>Sĩ số</th><th>Tổng cộng</th><th>Tổng trừ</th><th>Điểm TB tổ</th><th>Xếp loại TB</th></tr></thead><tbody>${rows.map((x,i)=>{let c=classify(x.avg);return `<tr><td>${i+1}</td><td><b>Tổ ${x.g}</b></td><td>${x.n}</td><td class="good">+${x.plus}</td><td class="bad">${x.minus}</td><td><b>${x.avg.toFixed(2)}</b></td><td><span class="badge ${c[1]}">${c[0]}</span></td></tr>`}).join("")}</tbody></table></div>`;
+ groupMembers.innerHTML=rows.map(x=>{let ms=classStudents().filter(s=>s.group===x.g);return `<h4>Tổ ${x.g}</h4><div class="tablewrap"><table><thead><tr><th>STT tổ</th><th>STT lớp</th><th>Họ tên</th><th>Điểm tuần</th></tr></thead><tbody>${ms.map(s=>`<tr><td>${s.groupOrder}</td><td>${s.stt}</td><td>${esc(s.name)}</td><td>${scoreFor(s.id,ws,we).score}</td></tr>`).join("")}</tbody></table></div>`}).join("");
+}
+
+function renderEntries(){
+ let rows=[...db.entries].sort((a,b)=>b.date.localeCompare(a.date));
+ entriesTable.innerHTML=rows.length?`<div class="tablewrap"><table><thead><tr><th>Ngày</th><th>STT</th><th>Tổ</th><th>Học sinh</th><th>Nội dung</th><th>Số lần</th><th>Điểm/lần</th><th>Tổng điểm</th><th>Ghi chú</th><th></th></tr></thead><tbody>${rows.map(e=>{let s=db.students.find(x=>x.id===e.studentId),r=db.rules.find(x=>x[0]===e.ruleId),n=e.count||1,u=e.unitValue??(r?.[2]||e.value);return `<tr><td>${e.date}</td><td>${s?.stt||""}</td><td>Tổ ${s?.group||"?"}</td><td>${esc(s?.name||"Đã xóa")}</td><td>${esc(r?.[1]||"Điều chỉnh nhanh")}</td><td><b>${n}</b></td><td>${u>0?"+":""}${u}</td><td class="${e.value<0?"bad":"good"}"><b>${e.value>0?"+":""}${e.value}</b></td><td>${esc(e.note)}</td><td><button class="btn danger" onclick="delEntry('${e.id}')">Xóa</button></td></tr>`}).join("")}</tbody></table></div>`:"Chưa có dữ liệu.";
+}
+function renderWeekly(){
+ let d=weekDate.value||today(), st=weekStart(d), en=addDays(st,6); weekLabel.value=`${st} → ${en}`;
+ let arr=activeStudents().map(s=>({...s,...scoreFor(s.id,st,en)}));
+ if(weekSort.value==="score")arr.sort((a,b)=>b.score-a.score);else arr.sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+ weeklyTable.innerHTML=`<div class="tablewrap"><table><thead><tr><th>Hạng</th><th>Tổ</th><th>Học sinh</th><th>Điểm cộng</th><th>Điểm trừ</th><th>Điểm tuần</th><th>Xếp loại</th><th>Lượt</th></tr></thead><tbody>${arr.map((x,i)=>{let c=classify(x.score);return `<tr><td>${i+1}</td><td>Tổ ${x.group||"?"}</td><td><b>${esc(x.name)}</b></td><td class="good">+${x.plus}</td><td class="bad">${x.minus}</td><td><b>${x.score}</b></td><td><span class="badge ${c[1]}">${c[0]}</span></td><td>${x.n}</td></tr>`}).join("")}</tbody></table></div>`;
+ return arr;
+}
+function weeksForMonth(month){
+ let [y,m]=month.split("-").map(Number), first=new Date(y,m-1,1), last=new Date(y,m,0), set=new Set();
+ for(let d=1;d<=last.getDate();d++){let dt=new Date(y,m-1,d), iso=dt.toISOString().slice(0,10);set.add(weekStart(iso))}
+ return [...set].sort();
+}
+function renderMonthly(){
+ let mo=monthPick.value||today().slice(0,7), weeks=weeksForMonth(mo);
+ let arr=activeStudents().map(s=>{let vals=weeks.map(w=>scoreFor(s.id,w,addDays(w,6)).score).filter((v,i)=>db.entries.some(e=>e.studentId===s.id&&e.date>=weeks[i]&&e.date<=addDays(weeks[i],6)));let avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:100;return {...s,avg,weeks:vals.length}});
+ arr.sort((a,b)=>b.avg-a.avg);
+ monthlyTable.innerHTML=`<p class="muted">Các tuần giao với tháng ${esc(mo)} được tính theo trung bình điểm tuần.</p><div class="tablewrap"><table><thead><tr><th>Tổ</th><th>Học sinh</th><th>Tuần có dữ liệu</th><th>Điểm TB tháng</th><th>Xếp loại</th></tr></thead><tbody>${arr.map(x=>{let c=classify(x.avg);return `<tr><td>Tổ ${x.group||"?"}</td><td><b>${esc(x.name)}</b></td><td>${x.weeks}</td><td>${x.avg.toFixed(2)}</td><td><span class="badge ${c[1]}">${c[0]}</span></td></tr>`}).join("")}</tbody></table></div>`;
+}
+function allYearWeeks(){
+ let set=new Set(db.entries.map(e=>weekStart(e.date)));return [...set].sort()
+}
+function renderYearly(){
+ let weeks=allYearWeeks(), arr=activeStudents().map(s=>{let vals=weeks.map(w=>scoreFor(s.id,w,addDays(w,6)).score).filter((v,i)=>db.entries.some(e=>e.studentId===s.id&&e.date>=weeks[i]&&e.date<=addDays(weeks[i],6)));let avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:100;return {...s,avg,weeks:vals.length}}).sort((a,b)=>b.avg-a.avg);
+ yearlyTable.innerHTML=`<p class="muted">Tính trên các tuần có dữ liệu trong năm học. Nếu chưa có dữ liệu, điểm hiển thị là 100.</p><div class="tablewrap"><table><thead><tr><th>Tổ</th><th>Học sinh</th><th>Số tuần</th><th>Điểm TB năm</th><th>Xếp loại</th></tr></thead><tbody>${arr.map(x=>{let c=classify(x.avg);return `<tr><td>Tổ ${x.group||"?"}</td><td><b>${esc(x.name)}</b></td><td>${x.weeks}</td><td>${x.avg.toFixed(2)}</td><td><span class="badge ${c[1]}">${c[0]}</span></td></tr>`}).join("")}</tbody></table></div>`;
+}
+function renderStudents(){
+ let arr=[...db.students].sort((a,b)=>a.name.localeCompare(b.name,"vi"));
+ studentsTable.innerHTML=`<div class="tablewrap"><table><thead><tr><th>STT</th><th>Họ và tên</th><th>Tổ</th><th>Thông tin</th><th>Trạng thái</th><th></th></tr></thead><tbody>${arr.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.name)}</b></td><td>Tổ ${s.group||"?"}</td><td>${esc(s.info||"")}</td><td>${s.active!==false?"Đang học":"Không hoạt động"}</td><td><button class="btn danger" onclick="delStudent('${s.id}')">Xóa</button></td></tr>`).join("")}</tbody></table></div>`;
+}
+function addStudent(){let name=studentName.value.trim();if(!name)return alert("Nhập họ tên.");db.students.push({id:uid(),name,info:studentInfo.value.trim(),active:studentActive.value==="1"});studentName.value="";studentInfo.value="";save()}
+function delStudent(id){if(confirm("Xóa học sinh? Lịch sử ghi nhận của em này cũng sẽ bị xóa.")){db.students=db.students.filter(s=>s.id!==id);db.entries=db.entries.filter(e=>e.studentId!==id);save()}}
+function renderRules(){
+ rulesTable.innerHTML=`<div class="tablewrap"><table><thead><tr><th>Mã</th><th>Nội dung</th><th>Điểm</th><th>Loại</th></tr></thead><tbody>${db.rules.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td class="${r[2]<0?"bad":"good"}"><b>${r[2]>0?"+":""}${r[2]}</b></td><td>${r[3]}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function renderDashboard(){
+ statStudents.textContent=activeStudents().length;statEntries.textContent=db.entries.length;
+ let a=renderWeekly();statAvg.textContent=(a.length?a.reduce((x,y)=>x+y.score,0)/a.length:100).toFixed(1);
+ dashboardTable.innerHTML=weeklyTable.innerHTML;
+}
+function renderAll(){enrichStudents();renderSelects();renderEntries();renderWeekly();renderMonthly();renderYearly();renderStudents();renderRules();renderDashboard();if(groupWeekDate)renderGroupReport()}
+function exportJSON(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="thi-dua-10B1-V4-backup.json";a.click()}
+function importJSON(ev){let f=ev.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=JSON.parse(rd.result);if(!x.students||!x.entries||!x.rules)throw 0;db=x;save();alert("Khôi phục dữ liệu thành công.")}catch(e){alert("File không hợp lệ.")}};rd.readAsText(f)}
+function exportCurrentCSV(){
+ let d=weekDate.value||today(),st=weekStart(d),en=addDays(st,6),arr=activeStudents().map(s=>{let x=scoreFor(s.id,st,en);return [s.group||"",s.name,x.plus,x.minus,x.score,classify(x.score)[0]]});
+ let csv="\uFEFFTổ,Học sinh,Điểm cộng,Điểm trừ,Điểm tuần,Xếp loại\n"+arr.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+ let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=`thi-dua-10B1-tuan-${st}.csv`;a.click()
+}
+function resetData(){if(confirm("XÓA TOÀN BỘ học sinh và lịch sử? Quy tắc mặc định sẽ được giữ lại.")){db={students:[],entries:[],rules:defaultRules};save()}}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.tab).classList.add("active");b.classList.add("active")});
+entryDate.value=today();weekDate.value=today();groupWeekDate.value=today();monthPick.value=today().slice(0,7);renderAll();renderGroupReport();
+
+let deferredInstallPrompt = null;
+let cloudApp = null, cloudDb = null, cloudUser = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstallPrompt = e; const s=document.getElementById("installStatus"); if(s) s.textContent="Ứng dụng sẵn sàng để cài đặt."; });
+window.addEventListener("appinstalled", () => { const s=document.getElementById("installStatus"); if(s) s.textContent="Đã cài ứng dụng thành công."; deferredInstallPrompt=null; });
+if("serviceWorker" in navigator && location.protocol !== "file:"){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+
+function installApp(){
+  if(deferredInstallPrompt){ deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(()=>{deferredInstallPrompt=null;}); }
+  else showInstallHelp();
+}
+function showInstallHelp(){
+  alert("Android/Chrome: mở tool bằng HTTPS → menu ⋮ → Thêm vào màn hình chính hoặc Cài đặt ứng dụng.\n\niPhone/iPad: mở bằng Safari → Chia sẻ → Thêm vào Màn hình chính.\n\nMáy tính Chrome/Edge: bấm biểu tượng Cài đặt ứng dụng ở thanh địa chỉ hoặc menu trình duyệt.");
+}
+function cloudMsg(t){const x=document.getElementById("cloudStatus"); if(x)x.textContent=t;}
+function getCloudClass(){return (document.getElementById("cloudClassId").value||"10B1-2026-2027").trim();}
+async function connectCloud(){
+  try{
+    if(typeof firebase==="undefined") throw new Error("Không tải được Firebase. Hãy mở tool bằng HTTPS và có Internet.");
+    const raw=document.getElementById("firebaseConfig").value.trim();
+    if(!raw) throw new Error("Chưa nhập Firebase config.");
+    const cfg=JSON.parse(raw);
+    if(!cloudApp) cloudApp=firebase.initializeApp(cfg);
+    cloudDb=firebase.firestore(cloudApp);
+    cloudUser=await firebase.auth().signInAnonymously();
+    cloudMsg("Đã kết nối cloud. Tài khoản ẩn danh đã đăng nhập.");
+  }catch(e){ cloudMsg("Kết nối lỗi: "+e.message); }
+}
+async function cloudPush(){
+  try{
+    if(!cloudDb || !cloudUser) await connectCloud();
+    if(!cloudDb) return;
+    const id=getCloudClass();
+    await cloudDb.collection("classes").doc(id).set({db:db,updatedAt:new Date().toISOString(),version:"V5"},{merge:true});
+    cloudMsg("Đã đồng bộ dữ liệu 10B1 lên cloud lúc "+new Date().toLocaleString("vi-VN"));
+  }catch(e){cloudMsg("Đồng bộ lên cloud lỗi: "+e.message);}
+}
+async function cloudPull(){
+  try{
+    if(!cloudDb || !cloudUser) await connectCloud();
+    if(!cloudDb) return;
+    const id=getCloudClass();
+    const snap=await cloudDb.collection("classes").doc(id).get();
+    if(!snap.exists) return cloudMsg("Chưa có dữ liệu lớp trên cloud.");
+    const remote=snap.data().db;
+    if(!remote || !remote.students || !remote.entries || !remote.rules) throw new Error("Dữ liệu cloud không hợp lệ.");
+    if(!confirm("Tải dữ liệu cloud sẽ thay thế dữ liệu hiện tại trên thiết bị. Tiếp tục?")) return;
+    db=remote;
+    localStorage.setItem(KEY,JSON.stringify(db));
+    renderAll();
+    cloudMsg("Đã tải dữ liệu từ cloud về thiết bị.");
+  }catch(e){cloudMsg("Tải cloud lỗi: "+e.message);}
+}
+
+</script>
+</body>
+</html>
